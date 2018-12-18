@@ -2,6 +2,7 @@ package patches.buildTypes
 
 import jetbrains.buildServer.configs.kotlin.v2018_2.*
 import jetbrains.buildServer.configs.kotlin.v2018_2.BuildType
+import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.powerShell
 import jetbrains.buildServer.configs.kotlin.v2018_2.ui.*
 
 /*
@@ -16,5 +17,14 @@ create(DslContext.projectId, BuildType({
     enablePersonalBuilds = false
     type = BuildTypeSettings.Type.DEPLOYMENT
     maxRunningBuilds = 1
+
+    steps {
+        powerShell {
+            name = "deployment logic"
+            scriptMode = script {
+                content = "echo 'Deploy to local machine'"
+            }
+        }
+    }
 }))
 
