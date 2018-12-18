@@ -29,6 +29,8 @@ create(DslContext.projectId, BuildType({
 
     dependencies {
         snapshot(RelativeId("Build")) {
+            onDependencyFailure = FailureAction.CANCEL
+            onDependencyCancel = FailureAction.CANCEL
         }
     }
 }))
