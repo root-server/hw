@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DevActivator.Meetups.BL.Interfaces;
@@ -21,7 +22,7 @@ namespace DevActivator.Controllers
             => _meetupService.GetAllMeetupsAsync();
 
         [HttpGet("[action]/{meetupId}")]
-        public Task<MeetupVm> GetMeetup(string meetupId)
+        public Task<MeetupVm> GetMeetup(String meetupId)
             => _meetupService.GetMeetupAsync(meetupId);
 
         [HttpPost("[action]")]
