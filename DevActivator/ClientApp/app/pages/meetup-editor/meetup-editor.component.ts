@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { ActivatedRoute, Params, Router } from "@angular/router";
-import { FILE_SIZES, LABELS, LayoutService, MIME_TYPES, PATTERNS } from "@dotnetru/core";
-import { IAutocompleteRow } from "@dotnetru/shared/autocomplete";
+import { LABELS, LayoutService, PATTERNS } from "@dotnetru/core";
+import { Moment } from "moment";
 import { Subscription } from "rxjs";
 
-import { IMeetup } from "./interfaces";
+import { COMMUNITIES } from "./constants";
+import { Community } from "./enums";
+import { IMeetup, ISession } from "./interfaces";
 import { MeetupEditorService } from "./meetup-editor.service";
 
 @Component({
@@ -17,10 +19,12 @@ import { MeetupEditorService } from "./meetup-editor.service";
 export class MeetupEditorComponent implements OnInit, OnDestroy {
     public readonly LABELS = LABELS;
     public readonly PATTERNS = PATTERNS;
+    public readonly Community = Community;
+    public readonly COMMUNITIES = COMMUNITIES;
 
     // todo: create service method getDefaultMeetup
     public meetup: IMeetup = {
-        communityId: "",
+        communityId: Community.SpbDotNet,
         friendIds: [],
         id: "",
         name: "",
@@ -62,14 +66,6 @@ export class MeetupEditorComponent implements OnInit, OnDestroy {
         this._subs.forEach((x) => x.unsubscribe);
     }
 
-    public goBack(): void {
-        if (!this._meetupEditorService.hasChanges(this.meetup)) {
-            this._router.navigateByUrl("/meetup-list");
-        } else {
-            this._layoutService.showWarning("Потеря введенных данных предотвращена");
-        }
-    }
-
     public save(): void {
         if (this.editMode) {
             this._meetupEditorService.updateMeetup(this.meetup);
@@ -82,8 +78,8 @@ export class MeetupEditorComponent implements OnInit, OnDestroy {
         this._meetupEditorService.reset();
     }
 
-    public onFriendSelected(row: IAutocompleteRow, index: number): void {
-        this.meetup.friendIds[index] = { friendId: row.id };
+    public onFriendSelected(friendId: string, index: number): void {
+        this.meetup.friendIds[index] = { friendId };
     }
 
     public removeFriend(index: number): void {
@@ -94,19 +90,44 @@ export class MeetupEditorComponent implements OnInit, OnDestroy {
         this.meetup.friendIds.push({ friendId: "" });
     }
 
-    public onVenueSelected(row: IAutocompleteRow): void {
-        this.meetup.venueId = row.id;
+    public onVenueSelected(venueId: string): void {
+        this.meetup.venueId = venueId;
     }
 
-    // public onTalkSelected(row: IAutocompleteRow, index: number): void {
-    //     this.meetup.talkIds[index] = { talkId: row.id };
-    // }
+    public onTalkSelected(talkId: string, index: number): void {
+        this.meetup.sessions[index] = Object.assign(
+            {},
+            this.meetup.sessions[index],
+            {
+                talkId,
+            },
+        );
+    }
 
-    // public removeTalk(index: number): void {
-    //     this.meetup.talkIds.splice(index, 1);
-    // }
+    public onRemoveSession(index: number): void {
+        this.meetup.sessions.splice(index, 1);
+    }
 
-    // public addTalk(): void {
-    //     this.meetup.talkIds.push({ talkId: "" });
-    // }
+    public tryFillEndTime(session: ISession): void {
+        if (session.startTime && !session.endTime) {
+            session.endTime = session.startTime.clone().add(1, "hour");
+        }
+    }
+
+    public addSession(): void {
+        let startTime: Moment | undefined;
+        if (this.meetup.sessions.length > 0) {
+            const lastSession = this.meetup.sessions[this.meetup.sessions.length - 1];
+            if (lastSession.endTime) {
+                startTime = lastSession.endTime.clone().add(30, "minutes");
+            }
+        }
+
+        let endTime: Moment | undefined;
+        if (startTime) {
+            endTime = startTime.clone().add(1, "hour");
+        }
+
+        this.meetup.sessions.push({ talkId: "", startTime, endTime });
+    }
 }

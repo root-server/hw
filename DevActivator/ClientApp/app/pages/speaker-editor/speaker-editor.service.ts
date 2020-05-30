@@ -1,5 +1,4 @@
 import { Injectable } from "@angular/core";
-import { Router } from "@angular/router";
 import { API_ENDPOINTS, HttpService, LayoutService } from "@dotnetru/core";
 import { BehaviorSubject, Observable } from "rxjs";
 import { filter, map } from "rxjs/operators";
@@ -23,7 +22,6 @@ export class SpeakerEditorService {
     constructor(
         private _layoutService: LayoutService,
         private _httpService: HttpService,
-        private _router: Router,
     ) { }
 
     public hasChanges(speaker: ISpeaker): boolean {
@@ -39,25 +37,26 @@ export class SpeakerEditorService {
             });
     }
 
-    public addSpeaker(speaker: ISpeaker): void {
+    public addSpeaker(speaker: ISpeaker, cb: (speaker: ISpeaker) => void): void {
         this._httpService.post<ISpeaker>(
             API_ENDPOINTS.addSpeakerUrl,
             speaker,
-            (x: ISpeaker) => {
-                this._layoutService.showInfo("Спикер добавлен успешно");
-                this._router.navigateByUrl(`speaker-editor${speaker ? `/${speaker.id}` : ""}`);
+            (res: ISpeaker) => {
+                this._layoutService.showInfo("Докладчик добавлен успешно");
+                cb(res);
             },
         );
     }
 
-    public updateSpeaker(speaker: ISpeaker): void {
+    public updateSpeaker(speaker: ISpeaker, cb: () => void): void {
         this._httpService.post<ISpeaker>(
             API_ENDPOINTS.updateSpeakerUrl,
             speaker,
             (x: ISpeaker) => {
-                this._layoutService.showInfo("Спикер изменён успешно");
+                this._layoutService.showInfo("Докладчик изменён успешно");
                 this._dataStore.speaker = x;
                 this._speaker$.next(Object.assign({}, this._dataStore.speaker));
+                cb();
             },
         );
     }

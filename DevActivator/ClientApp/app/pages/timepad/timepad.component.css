@@ -1,0 +1,70 @@
+:host {
+    display: block;
+    height: 100%;
+}
+
+.save-action {
+    height: 36px;
+    padding-bottom: 4px;
+    display: flex;
+    justify-content: flex-end;
+    max-width: 640px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.container {
+    max-width: 640px;
+    margin: 0 auto;
+    height: calc(100% - 40px);
+    overflow: auto;
+}
+
+.mat-list-item {
+    height: auto !important;
+    padding: 12px 0 !important;
+}
+
+.session-content,
+.friend-content {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    justify-content: space-between;
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
+.session-description {
+    padding-left: 8px;
+}
+
+h3,
+p {
+    white-space: pre-wrap;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.about {
+    display: flex;
+}
+
+.avatar {
+    max-width: 200px;
+}
+
+.mat-expansion-panel-header-title {
+    flex-direction: column;
+}
+
+.handle {
+    padding-right: 4px;
+}
+
+.header {
+    height: 40px;
+    display: flex;
+    align-items: center;
+}

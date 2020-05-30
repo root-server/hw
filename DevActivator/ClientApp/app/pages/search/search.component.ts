@@ -28,16 +28,16 @@ export class SearchPageComponent {
         this._router.navigateByUrl(`talk-creator`);
     }
 
-    public onVenueSelected(venue: IAutocompleteRow): void {
-        this._router.navigateByUrl(`venue-editor/${venue.id}`);
+    public onVenueSelected(venueId: string): void {
+        this._router.navigateByUrl(`venue-editor/${venueId}`);
     }
 
     public addVenue(): void {
         this._router.navigateByUrl(`venue-creator`);
     }
 
-    public onFriendSelected(friend: IAutocompleteRow): void {
-        this._router.navigateByUrl(`friend-editor/${friend.id}`);
+    public onFriendSelected(friendId: string): void {
+        this._router.navigateByUrl(`friend-editor/${friendId}`);
     }
 
     public addFriend(): void {
@@ -51,4 +51,13 @@ export class SearchPageComponent {
     public addMeetup(): void {
         this._router.navigateByUrl(`meetup-creator`);
     }
+
+    public addTimepad(): void {
+        this._router.navigateByUrl(`timepad`);
+    }
+
+    public onTimepadSelected(meetup: IAutocompleteRow): void {
+        this._router.navigateByUrl(`timepad/${meetup.id}`);
+    }
+
 }

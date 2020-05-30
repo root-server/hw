@@ -1,29 +1,33 @@
 <form #talkForm="ngForm"
       class="base-component-container">
 
-    <div class="actions">
-        <button type="button"
-                color="primary"
-                mat-icon-button
-                (click)="goBack()">
-            <mat-icon>arrow_back_ios</mat-icon>
-        </button>
-        <button type="button"
-                color="primary"
-                mat-button
-                [disabled]="!editMode"
-                (click)="reset()">
-            <mat-icon>close</mat-icon>
-            <span>Сбросить</span>
-        </button>
-        <button type="button"
-                color="primary"
-                mat-button
-                [disabled]="talkForm.invalid"
-                (click)="save()">
-            <mat-icon>{{ editMode ? 'save' : 'add' }}</mat-icon>
-            <span>{{ editMode ? 'Сохранить' : 'Добавить' }}</span>
-        </button>
+    <div class="actions__space-between">
+        <span class="text bold no-wrap">{{ editMode ? 'Редактирование' : 'Добавление' }} доклада</span>
+        <div class="actions">
+            <button type="button"
+                    color="primary"
+                    mat-button
+                    *ngIf="editMode"
+                    (click)="reset()">
+                <mat-icon>close</mat-icon>
+                <span>Сбросить</span>
+            </button>
+            <button type="button"
+                    color="primary"
+                    mat-button
+                    [disabled]="talkForm.invalid"
+                    (click)="save()">
+                <mat-icon>{{ editMode ? 'save' : 'add' }}</mat-icon>
+                <span>{{ editMode ? 'Сохранить' : 'Добавить' }}</span>
+            </button>
+            <button *ngIf="isDialog"
+                    type="button"
+                    color="primary"
+                    mat-icon-button
+                    (click)="close()">
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
     </div>
 
     <mat-form-field>
@@ -63,22 +67,31 @@
 
     <mat-card>
         <mtp-speaker-list *ngFor="let rel of talk.speakerIds; let idx = index"
-                          [title]="'Спикер №' + (idx+1)"
+                          [title]="'Докладчик №' + (idx+1)"
                           [iconName]="'delete_forever'"
                           [iconText]="'Убрать'"
                           [speakerLink]="rel"
                           (selected)="onSpeakerSelected($event, idx)"
                           (iconClicked)="removeSpeaker(idx)"></mtp-speaker-list>
-        <button type="button"
-                color="primary"
-                mat-button
-                (click)="addSpeaker()">
-            <mat-icon>person_add</mat-icon>
-            <span *ngIf="talk.speakerIds.length === 0">Добавить спикера</span>
-            <span *ngIf="talk.speakerIds.length === 1">Это парный доклад</span>
-            <span *ngIf="talk.speakerIds.length === 2">Это тройничок</span>
-            <span *ngIf="talk.speakerIds.length >=3">Это круглый стол</span>
-        </button>
+        <div class="actions__space-between">
+            <button type="button"
+                    color="primary"
+                    mat-button
+                    (click)="addSpeaker()">
+                <mat-icon>person_add</mat-icon>
+                <span *ngIf="talk.speakerIds.length === 0">Добавить докладчика</span>
+                <span *ngIf="talk.speakerIds.length === 1">Это парный доклад</span>
+                <span *ngIf="talk.speakerIds.length === 2">Это тройничок</span>
+                <span *ngIf="talk.speakerIds.length >=3">Это круглый стол</span>
+            </button>
+            <button type="button"
+                    color="primary"
+                    mat-button
+                    (click)="createSpeaker()">
+                <mat-icon>fiber_new</mat-icon>
+                <span>Создать докладчика</span>
+            </button>
+        </div>
     </mat-card>
 
     <mat-form-field>

@@ -22,8 +22,8 @@ import { VenueListService } from "./venue-list.service";
 })
 export class VenueListComponent implements OnInit, OnDestroy {
     @Input() public title: string = "Поиск площадки";
-    @Input() public iconName: string = "";
-    @Input() public iconText: string = "";
+    @Input() public iconName: string = "add";
+    @Input() public iconText: string = "Добавить";
 
     @Input() public set venueLink(value: { venueId?: string }) {
         if (value && value.venueId) {
@@ -31,9 +31,15 @@ export class VenueListComponent implements OnInit, OnDestroy {
         }
     }
 
+    @Input() public set venueId(venueId: string | undefined) {
+        if (venueId) {
+            this._venueId$.next(venueId);
+        }
+    }
+
     @ViewChild("autocomplete") public autocomplete!: AutocompleteComponent;
 
-    @Output() public readonly selected: EventEmitter<IAutocompleteRow> = new EventEmitter<IAutocompleteRow>();
+    @Output() public readonly selected: EventEmitter<string> = new EventEmitter<string>();
     @Output() public readonly iconClicked: EventEmitter<void> = new EventEmitter<void>();
 
     public venues: IAutocompleteRow[] = [];
@@ -75,7 +81,7 @@ export class VenueListComponent implements OnInit, OnDestroy {
     }
 
     public onSelected(row: IAutocompleteRow): void {
-        this.selected.emit(row);
+        this.selected.emit(row.id);
     }
 
     public onIconClicked(): void {

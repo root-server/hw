@@ -1,9 +1,8 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, OnDestroy, OnInit, Output } from "@angular/core";
 import { ActivatedRoute, Params, Router } from "@angular/router";
-import { FILE_SIZES, LABELS, LayoutService, MIME_TYPES, PATTERNS } from "@dotnetru/core";
+import { LABELS, LayoutService, PATTERNS } from "@dotnetru/core";
 import { City } from "@dotnetru/shared/city-select";
 import { Subscription } from "rxjs";
-
 import { IVenue } from "./interfaces";
 import { VenueEditorService } from "./venue-editor.service";
 
@@ -18,10 +17,14 @@ export class VenueEditorComponent implements OnInit, OnDestroy {
     public readonly LABELS = LABELS;
     public readonly PATTERNS = PATTERNS;
 
+    @Output() public readonly saved: EventEmitter<IVenue> = new EventEmitter<IVenue>();
+
     // todo: create service method getDefaultVenue
     public venue: IVenue = { id: "", city: City.Spb, name: "", address: "", mapUrl: "" };
 
     public editMode: boolean = true;
+
+    protected isDialog: boolean = false;
 
     private _subs: Subscription[] = [];
 
@@ -30,7 +33,7 @@ export class VenueEditorComponent implements OnInit, OnDestroy {
         private _layoutService: LayoutService,
         private _activatedRoute: ActivatedRoute,
         private _router: Router,
-        private _changeDetectorRef: ChangeDetectorRef,
+        protected _changeDetectorRef: ChangeDetectorRef,
     ) { }
 
     public ngOnInit(): void {
@@ -55,19 +58,19 @@ export class VenueEditorComponent implements OnInit, OnDestroy {
         this._subs.forEach((x) => x.unsubscribe);
     }
 
-    public goBack(): void {
-        if (!this._venueEditorService.hasChanges(this.venue)) {
-            this._router.navigateByUrl("/venue-list");
-        } else {
-            this._layoutService.showWarning("Потеря введенных данных предотвращена");
-        }
-    }
-
-    public save(): void {
+    public save(cb?: (venue: IVenue) => void): void {
         if (this.editMode) {
-            this._venueEditorService.updateVenue(this.venue);
+            this._venueEditorService.updateVenue(this.venue, () => {
+                this.saved.emit(this.venue);
+                if (cb) {
+                    cb(this.venue);
+                }
+            });
         } else {
-            this._venueEditorService.addVenue(this.venue);
+            cb = cb || ((venue: IVenue) => {
+                this._router.navigateByUrl(`venue-editor${venue ? `/${venue.id}` : ""}`);
+            });
+            this._venueEditorService.addVenue(this.venue, cb);
         }
     }
 
@@ -75,15 +78,7 @@ export class VenueEditorComponent implements OnInit, OnDestroy {
         this._venueEditorService.reset();
     }
 
-    // public onSpeakerSelected(row: IAutocompleteRow, index: number): void {
-    //     this.venue.speakerIds[index] = { speakerId: row.id };
-    // }
-
-    // public removeSpeaker(index: number): void {
-    //     this.venue.speakerIds.splice(index, 1);
-    // }
-
-    // public addSpeaker(): void {
-    //     this.venue.speakerIds.push({ speakerId: "" });
-    // }
+    public close(): void {
+        console.warn(`${this.constructor.name} => close`);
+    }
 }

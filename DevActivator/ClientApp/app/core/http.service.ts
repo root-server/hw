@@ -49,20 +49,7 @@ export class HttpService {
         this._layoutService.showProgress();
     }
 
-    private onSuccess<T>(res: T, cb: (x: T) => void): void {
-        cb(res);
-    }
-
-    private onError = (err: any, errCb?: (x: any) => void): void => {
-        console.error(err);
-        if (errCb) {
-            errCb(err);
-        } else {
-            this._layoutService.showError(err.message);
-        }
-    }
-
-    private onComplete(): void {
+    private requestEnded(): void {
         if (this._requestsCount > 0) {
             --this._requestsCount;
             if (this._requestsCount === 0) {
@@ -71,5 +58,36 @@ export class HttpService {
         } else {
             console.warn("try decrease requestsCount below zero");
         }
+    }
+
+    private onSuccess<T>(res: T, cb: (x: T) => void): void {
+        this.requestEnded();
+        cb(res);
+    }
+
+    private onError = (err: any, errCb?: (x: any) => void): void => {
+        this.requestEnded();
+        console.error(err);
+        if (errCb) {
+            errCb(err);
+        } else {
+            let message: string = "Неопознанная ошибка!";
+
+            if (err.status === 400 || err.status === 404 || err.status === 405) {
+                message = err.error;
+            } else if (err.status === 500) {
+                message = "Возникла непредвиденная ошибка на сервере";
+            } else if (err.status <= 0) {
+                message = "Api не запущен";
+            } else {
+                throw err;
+            }
+
+            this._layoutService.showError(message);
+        }
+    }
+
+    private onComplete(): void {
+        // ignore
     }
 }

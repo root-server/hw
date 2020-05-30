@@ -1,9 +1,8 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
-import { ActivatedRoute, Router } from "@angular/router";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
+import { ActivatedRoute, Params, Router } from "@angular/router";
 import { FILE_SIZES, LABELS, LayoutService, MIME_TYPES, PATTERNS } from "@dotnetru/core";
 import { IAcceptedFile, IRejectedFile, RejectionReason } from "@dotnetru/shared/file-dialog";
 import { Subscription } from "rxjs";
-
 import { ISpeaker } from "./interfaces";
 import { SpeakerEditorService } from "./speaker-editor.service";
 
@@ -20,16 +19,27 @@ export class SpeakerEditorComponent implements OnInit, OnDestroy {
     public readonly AVATAR_MIME_TYPES = MIME_TYPES.JPEG;
     public readonly AVATAR_MAX_SIZE = FILE_SIZES.AVATAR_MAX_SIZE;
 
+    @Input() public set speakerId(value: string) {
+        this._speakerId = value;
+        this.editMode = typeof this._speakerId === "string" && this._speakerId.length > 0;
+        this._speakerEditorService.fetchSpeaker(this._speakerId);
+    }
+
+    @Output() public readonly saved: EventEmitter<ISpeaker> = new EventEmitter<ISpeaker>();
+
     // todo: create service method getDefaultSpeaker
     public speaker: ISpeaker = {
-        companyName: "test company name",
-        description: "test description",
-        id: "Test-Id",
-        name: "Test Name",
+        companyName: "",
+        description: "",
+        id: "",
+        name: "",
     };
 
-    public editMode: boolean = true;
+    public editMode: boolean = false;
 
+    protected isDialog: boolean = false;
+
+    private _speakerId?: string;
     private _subs: Subscription[] = [];
 
     constructor(
@@ -43,11 +53,9 @@ export class SpeakerEditorComponent implements OnInit, OnDestroy {
     public ngOnInit(): void {
         this._subs = [
             this._activatedRoute.params
-                .subscribe((params) => {
-                    if (typeof params.speakerId === "string" && params.speakerId.length > 0) {
-                        this._speakerEditorService.fetchSpeaker(params.speakerId);
-                    } else {
-                        this.editMode = false;
+                .subscribe((params: Params) => {
+                    if (typeof params.speakerId === "string") {
+                        this.speakerId = params.speakerId;
                     }
                 }),
             this._speakerEditorService.speaker$
@@ -62,24 +70,25 @@ export class SpeakerEditorComponent implements OnInit, OnDestroy {
         this._subs.forEach((x) => x.unsubscribe);
     }
 
-    public goBack(): void {
-        if (!this._speakerEditorService.hasChanges(this.speaker)) {
-            this._router.navigateByUrl("/speaker-list");
-        } else {
-            this._layoutService.showWarning("Потеря введенных данных предотвращена");
-        }
-    }
-
-    public save(): void {
+    public save(cb?: (speaker: ISpeaker) => void): void {
         if (this.editMode) {
-            this._speakerEditorService.updateSpeaker(this.speaker);
+            this._speakerEditorService.updateSpeaker(this.speaker, () => {
+                this.saved.emit(this.speaker);
+            });
         } else {
-            this._speakerEditorService.addSpeaker(this.speaker);
+            cb = cb || ((speaker: ISpeaker) => {
+                this._router.navigateByUrl(`speaker-editor${speaker ? `/${speaker.id}` : ""}`);
+            });
+            this._speakerEditorService.addSpeaker(this.speaker, cb);
         }
     }
 
     public reset(): void {
         this._speakerEditorService.reset();
+    }
+
+    public close(): void {
+        console.warn(`${this.constructor.name} => close`);
     }
 
     public onFilesAccepted(files: IAcceptedFile[]): void {

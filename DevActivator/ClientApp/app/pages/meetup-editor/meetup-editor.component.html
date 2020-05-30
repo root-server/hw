@@ -4,14 +4,8 @@
     <div class="actions">
         <button type="button"
                 color="primary"
-                mat-icon-button
-                (click)="goBack()">
-            <mat-icon>arrow_back_ios</mat-icon>
-        </button>
-        <button type="button"
-                color="primary"
                 mat-button
-                [disabled]="!editMode"
+                *ngIf="editMode"
                 (click)="reset()">
             <mat-icon>close</mat-icon>
             <span>Сбросить</span>
@@ -61,6 +55,18 @@
         </mat-error>
     </mat-form-field>
 
+    <mat-form-field>
+        <mat-select name="communityId"
+                    placeholder="Сообщество"
+                    [(ngModel)]="meetup.communityId"
+                    required>
+            <mat-option *ngFor="let community of COMMUNITIES"
+                        [value]="community">
+                {{ Community[community] }}
+            </mat-option>
+        </mat-select>
+    </mat-form-field>
+
     <mat-card>
         <mtp-friend-list *ngFor="let rel of meetup.friendIds; let idx = index"
                          [title]="'Друг №' + (idx+1)"
@@ -83,20 +89,15 @@
                     (selected)="onVenueSelected($event)"></mtp-venue-list>
 
     <mat-card>
-        <ng-container *ngFor="let session of meetup.sessions; let idx = index">
-            <mtp-talk-list [title]="'Сессия №' + (idx+1)"
-                           [iconName]="'delete_forever'"
-                           [iconText]="'Убрать'"
-                           [talkLink]="session"
-                           (selected)="onTalkSelected($event, idx)"
-                           (iconClicked)="removeTalk(idx)"></mtp-talk-list>
-            <pre>{{ session.startTime }}</pre>
-            <pre>{{ session.endTime }}</pre>
-        </ng-container>
+        <mtp-session-editor *ngFor="let session of meetup.sessions; let idx = index"
+                            [title]="'Сессия №' + (idx+1)"
+                            [session]="session"
+                            (talkSelected)="onTalkSelected($event, idx)"
+                            (removeSession)="onRemoveSession(idx)"></mtp-session-editor>
         <button type="button"
                 color="primary"
                 mat-button
-                (click)="addTalk()">
+                (click)="addSession()">
             <mat-icon>exposure_plus_1</mat-icon>
             <span>Добавить сессию</span>
         </button>
